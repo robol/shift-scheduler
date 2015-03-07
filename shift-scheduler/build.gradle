@@ -1,0 +1,7 @@
+sourceSets {
+    main {
+        java {
+            srcDir 'src/it/robol/shiftscheduler/backend'
+        }
+    }
+}

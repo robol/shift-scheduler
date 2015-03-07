@@ -1,0 +1,40 @@
+apply plugin: 'application'
+
+dependencies {
+    compile project(':shift-scheduler')
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/it/robol/shiftscheduler/desktop'
+        }
+        resources {
+            srcDir 'src'
+        }
+    }
+}
+
+mainClassName = 'it.robol.shiftscheduler.desktop.ShiftScheduler'
+
+run {
+    systemProperty 'java.library.path', '../libs'
+}
+
+apply plugin: 'launch4j'
+
+launch4j {
+    mainClassName = 'it.robol.shiftscheduler.desktop.ShiftScheduler'
+    icon = '../../src/images/program-icon.ico'
+    bundledJrePath = 'jre'
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'edu.sc.seis.gradle:launch4j:1.0.6'
+    }
+}

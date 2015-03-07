@@ -1,0 +1,17 @@
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+
+        flatDir {
+            dir '../libs'
+        }
+    }
+
+    dependencies {
+        compile group: 'de.sciss', name: 'weblaf', version: '1.28'        
+        compile group: 'com.sun.jna', name: 'jna', version: '3.0.9'
+        compile name: 'glpk-java'
+    }
+}

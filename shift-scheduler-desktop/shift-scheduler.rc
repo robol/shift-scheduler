@@ -1,0 +1,26 @@
+id ICON src/images/program-icon.ico
+1 VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName", "Leonardo Robol"
+      VALUE "FileDescription", "Shift Scheduler"
+      VALUE "FileVersion", "0.1.0"
+      VALUE "InternalName", "shift-scheduler"
+      VALUE "LegalCopyright", "Leonardo Robol"
+      VALUE "OriginalFilename", "ShiftScheduler.exe"
+      VALUE "ProductName", "Shift Scheduler"
+      VALUE "ProductVersion", "0.1.0"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END
+
