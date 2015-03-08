@@ -31,9 +31,6 @@ public class ShiftScheduler {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {  
-                // Temporary solution to test the Italian locale
-                Locale.setDefault(Locale.ITALY);
-                
                 final MainWindow w = new MainWindow();                
                 w.setVisible(true);
             }
