@@ -598,17 +598,19 @@ public class TimetableSolver {
             r = r + 1;
         }        
         
-        // Reset everything again and reimpose the constraint on Sundays
-        shiftChange = new HashSet<>();        
-        minimum_working_time = getMinimumSundayStart();
+        // Reset everything again and reimpose the constraint on Sundays, but do
+	// it only in the case where there are actually some shifts on Sunday. 
+	if (shift_storage.getSundayShiftNumber() != 0) {
+	  shiftChange = new HashSet<>();        
+	  minimum_working_time = getMinimumSundayStart();
         
-        for (int i = 0; i < shift_storage.getSundayShiftNumber(); i++) {
+	  for (int i = 0; i < shift_storage.getSundayShiftNumber(); i++) {
             Shift s = shift_storage.getSundayShift(i);
             shiftChange.add(s.end);
-        }
+	  }
         
-        GLPK.glp_add_rows(problem, shiftChange.size() + 1);
-        for (Time t : shiftChange) {
+	  GLPK.glp_add_rows(problem, shiftChange.size() + 1);
+	  for (Time t : shiftChange) {
             // Make sure that the sum of exprienced people working in the shift
             // ending at a time >= t and starting at time < t is at least k. 
             for (int ii = 0; ii < shift_storage.getSundayShiftNumber(); ii++) {
@@ -628,9 +630,9 @@ public class TimetableSolver {
 
             GLPK.glp_set_row_bnds(problem, r, GLPKConstants.GLP_LO, k, 0.0);
             r = r + 1;
-        }            
+	  }            
         
-        for (int ii = 0; ii < shift_storage.getSundayShiftNumber(); ii++) {
+	  for (int ii = 0; ii < shift_storage.getSundayShiftNumber(); ii++) {
             Shift s = shift_storage.getSundayShift(ii);
             if (s.start.equal(minimum_working_time)) {
                 for (int iii = 0; iii < n; iii++) {
@@ -642,10 +644,11 @@ public class TimetableSolver {
                     }
                 }
             }
-        }
-
-        GLPK.glp_set_row_bnds(problem, r, GLPKConstants.GLP_LO, k, 0.0);
-        r = r + 1;
+	  }
+	  
+	  GLPK.glp_set_row_bnds(problem, r, GLPKConstants.GLP_LO, k, 0.0);
+	  r = r + 1;
+	}
     }
     
     private Time getMinimumMorningStart() {
