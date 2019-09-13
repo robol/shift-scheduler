@@ -93,9 +93,9 @@ public class TimetableSolver {
      * the problem, such as the number of shifts per day. 
      */
     private void computeBounds() {
-        mm = shift_storage.getMorningShiftNumber() + 1;
-        ma = shift_storage.getAfternoonShiftNumber() + 1;
-        ms = shift_storage.getSundayShiftNumber() + 1;        
+        mm = shift_storage.getMorningShiftNumber();
+        ma = shift_storage.getAfternoonShiftNumber();
+        ms = shift_storage.getSundayShiftNumber();        
                 
         m = mm + ma;
         n = storage.getEmployeeNumber();
@@ -124,7 +124,7 @@ public class TimetableSolver {
         
         problem = GLPK.glp_create_prob();
         
-        // Setup all the variables needed. 
+        // Setup all the variables needed.
         GLPK.glp_add_cols(problem, n * (m * d + ms));
         
         // Make sure that GLPK know that our columns are BV
@@ -239,7 +239,6 @@ public class TimetableSolver {
                 }
             }
             
-            // System.out.println(sunday_choice);            
             t.setSundayShift(e, 
                 (sunday_choice < ms) ? shift_storage.getSundayShift(sunday_choice - 1) : null);
         }
@@ -293,13 +292,13 @@ public class TimetableSolver {
                     GLPK.intArray_setitem(ia, ++el, r);
                     GLPK.intArray_setitem(ja, el, shift + (ii-1)*m + iii);
                     GLPK.doubleArray_setitem(va, el, 
-                            (iii < mm) ? shift_storage.getMorningShift(iii-1).length() : 0.0);
+                            (iii <= mm) ? shift_storage.getMorningShift(iii-1).length() : 0.0);
                 }
                 for (int iii = 1; iii <= ma; iii++) {
                     GLPK.intArray_setitem(ia, ++el, r);
                     GLPK.intArray_setitem(ja, el, shift + (ii-1)*m + mm + iii);
                     GLPK.doubleArray_setitem(va, el, 
-                            (iii < ma) ? shift_storage.getAfternoonShift(iii-1).length() : 0.0);
+                            (iii <= ma) ? shift_storage.getAfternoonShift(iii-1).length() : 0.0);
                 }
             }
             
@@ -308,7 +307,7 @@ public class TimetableSolver {
                 GLPK.intArray_setitem(ia, ++el, r);
                 GLPK.intArray_setitem(ja, el, shift + d*m + iii);
                 GLPK.doubleArray_setitem(va, el, 
-                        (iii < ms) ? shift_storage.getSundayShift(iii-1).length() : 0.0);
+                        (iii <= ms) ? shift_storage.getSundayShift(iii-1).length() : 0.0);
             }
             
             GLPK.glp_set_row_bnds(problem, r, GLPKConstants.GLP_FX, 
@@ -326,28 +325,34 @@ public class TimetableSolver {
         for (int i = 1 ; i <= d; i++) {
             // Counting shifts in the morning
             for (int ii = 1; ii <= n; ii++) {
-                GLPK.intArray_setitem(ia, ++el, r);
-                GLPK.intArray_setitem(ja, el, (ii-1)*(d*m+ms) + (i-1)*m + mm);
-                GLPK.doubleArray_setitem(va, el, 1.0);
+		for (int iii = 0; iii < shift_storage.getMorningShiftNumber(); iii++) {
+		    GLPK.intArray_setitem(ia, ++el, r);
+		    GLPK.intArray_setitem(ja, el, (ii-1)*(d*m+ms) + (i-1)*m + iii);
+		    GLPK.doubleArray_setitem(va, el, 1.0);
+		}
             }
             GLPK.glp_set_row_bnds(problem, r, GLPKConstants.GLP_UP, 0.0, n-minimum_morning_people[i-1]);
             r++;
             
             // Counting shifts in the afternoon
             for (int ii = 1; ii <= n; ii++) {
-                GLPK.intArray_setitem(ia, ++el, r);
-                GLPK.intArray_setitem(ja, el, (ii-1)*(d*m+ms) + (i-1)*m + m);
-                GLPK.doubleArray_setitem(va, el, 1.0);
+		for (int iii = 0; iii < shift_storage.getAfternoonShiftNumber(); iii++) {
+		    GLPK.intArray_setitem(ia, ++el, r);
+		    GLPK.intArray_setitem(ja, el, (ii-1)*(d*m+ms) + (i-1)*m + mm + iii);
+		    GLPK.doubleArray_setitem(va, el, 1.0);
+		}
             }
             GLPK.glp_set_row_bnds(problem, r, GLPKConstants.GLP_UP, 0.0, n-minimum_afternoon_people[i-1]);
             r++;
         }
         
         // Counting shifts on Sundays
-        for (int ii = 1; ii <= n; ii++) {
-            GLPK.intArray_setitem(ia, ++el, r);
-            GLPK.intArray_setitem(ja, el, (ii-1)*(d*m+ms) + d*m+ms);
-            GLPK.doubleArray_setitem(va, el, 1.0);
+        for (int ii = 1; ii <= n; ii++) {	    
+	    for (int iii = 0; iii < shift_storage.getSundayShiftNumber(); iii++) {
+		GLPK.intArray_setitem(ia, ++el, r);
+		GLPK.intArray_setitem(ja, el, (ii-1)*(d*m+ms) + d*m + iii);
+		GLPK.doubleArray_setitem(va, el, 1.0);
+	    }
         }
         GLPK.glp_set_row_bnds(problem, r, GLPKConstants.GLP_UP, 0.0, n-minimum_sunday_people);
         r++;
@@ -762,11 +767,11 @@ public class TimetableSolver {
                         break;
                 }                
                 
-                GLPK.glp_set_obj_coef(problem, shift + ii*d + iii, l);
+                GLPK.glp_set_obj_coef(problem, shift + ii*m + iii, l);
              }
              
              for (int iii = 0; iii < shift_storage.getAfternoonShiftNumber(); iii++) {
-                Shift s = shift_storage.getMorningShift(iii);
+                Shift s = shift_storage.getAfternoonShift(iii);
                 double l = 0.0;
                 int shift = i*(m*d+ms);
                                            
@@ -779,12 +784,12 @@ public class TimetableSolver {
                         break;
                 }                
                 
-                GLPK.glp_set_obj_coef(problem, shift + ii*d + mm + iii, l); 
+                GLPK.glp_set_obj_coef(problem, shift + ii*m + mm + iii, l); 
              }
          }
          
          for (int iii = 0; iii < shift_storage.getSundayShiftNumber(); iii++) {
-            Shift s = shift_storage.getMorningShift(iii);
+            Shift s = shift_storage.getSundayShift(iii);
             double l = 0.0;
             int shift = i*(m*d+ms);
 
